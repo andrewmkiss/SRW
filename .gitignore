@@ -2,3 +2,8 @@
 ext_lib/fftw*
 ext_lib/*.a
 *.swp
+cpp/gcc/*.a
+cpp/gcc/*.so
+cpp/gcc/srwlclient
+env/work/srw_python/*.so
+env/work/srw_python/*.pyd
