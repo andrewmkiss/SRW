@@ -1,2 +1,4 @@
 *.pyc
-
+ext_lib/fftw*
+ext_lib/*.a
+*.swp
