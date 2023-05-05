@@ -7,6 +7,7 @@
 # - `make clean` - will clean temporary files.
 #
 # Updated by Maksim Rakitin (NSLS-II, BNL) on May 2, 2016.
+# Updated by Andy Kiss (NSLS-II, BNL) on May 5, 2023
 
 root_dir = $(realpath .)
 env_dir = $(root_dir)/env
@@ -20,6 +21,9 @@ fftw3_version = fftw-3.3.8
 fftw3_dir = $(fftw3_version)
 fftw3_file = $(fftw3_version).tar.gz
 log_fftw = /dev/null
+py_inc = /usr/include/python3.9
+py_lib = /usr/lib/python3.9
+extra_args = "MODE=omp"
 examples_dir = $(env_dir)/work/srw_python
 #example10_data_dir = $(examples_dir)/data_example_10
 export MODE ?= 0
@@ -33,23 +37,26 @@ fftw:
 	    mkdir $(ext_dir); \
 	fi; \
 	cd $(ext_dir); \
-#	if [ ! -f "$(fftw2_file)" ]; then \
-#	    wget https://raw.githubusercontent.com/ochubar/SRW/master/ext_lib/$(fftw2_file); \
-#	fi; \
+	if [ ! -f "$(fftw2_file)" ]; then \
+	    wget https://www.fftw.org/pub/fftw/$(fftw2_file); \
+	fi; \
 	if [ -d "$(fftw2_dir)" ]; then \
 	    rm -rf $(fftw2_dir); \
 	fi; \
-	tar -zxf $(fftw2_file); \
+	tar -xzf $(fftw2_file); \
 	cd $(fftw2_dir); \
 	./configure --enable-float --with-pic; \
 	sed 's/^CFLAGS = /CFLAGS = -fPIC /' -i Makefile; \
 	make -j8 && cp fftw/.libs/libfftw.a $(ext_dir); \
 	cd $(ext_dir); \
 	rm -rf $(fftw2_dir); \
+	if [ ! -f "$(fftw3_file)" ]; then \
+	    wget https://www.fftw.org/pub/fftw/$(fftw3_file); \
+	fi; \
 	if [ -d "$(fftw3_dir)" ]; then \
 	    rm -rf $(fftw3_dir); \
 	fi; \
-	tar -zxf $(fftw3_file); \
+	tar -xzf $(fftw3_file); \
 	cd $(fftw3_dir); \
 	./configure --enable-float --with-pic; \
 	sed 's/^CFLAGS = /CFLAGS = -fPIC /' -i Makefile; \
@@ -62,13 +69,18 @@ fftw:
 	sed 's/^CFLAGS = /CFLAGS = -fPIC /' -i Makefile; \
 	make -j8 && cp .libs/libfftw3.a ../; \
 	cd $(root_dir); \
-	rm -rf $(ext_dir)/$(fftw3_dir);
+	rm -rf $(ext_dir)/$(fftw3_dir); \
 
 core: 
-	cd $(gcc_dir); make -j8 clean lib
+	cd $(gcc_dir); \
+	sed 's/PYFLAGS=.*/PYFLAGS=-I$(py_inc) -L$(py_lib) /'; \
+	make -j8 clean lib $(extra_args);
 
 pylib:
-	cd $(py_dir); make python
+	cd $(gcc_dir); \
+	sed 's/PYFLAGS=.*/PYFLAGS=-I$(py_inc) -L$(py_lib) /'; \
+	make pylib $(extra_args); \
+	cp srwlpy.so $(examples_dir)/.; 
 
 clean:
 	rm -f $(ext_dir)/libfftw3f.a $(ext_dir)/libfftw3.a $(gcc_dir)/libsrw.a $(gcc_dir)/srwlpy*.so; \
