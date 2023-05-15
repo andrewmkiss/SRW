@@ -29,7 +29,7 @@ from time import time
 #from sklearn.decomposition import PCA as PCA #OC04082021 (moved to try-except)
 try:
     from scipy.linalg import eigh as largest_eigh
-    from scipy.sparse.linalg.eigen.arpack import eigsh as largest_eigsh
+    from scipy.sparse.linalg import eigsh as largest_eigsh
 except:
     print("UtiMathEigen WARNING: SciPy unavailable; to install: pip install scipy")
 try:
